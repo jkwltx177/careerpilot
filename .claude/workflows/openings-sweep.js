@@ -10,7 +10,7 @@ export const meta = {
 
 // args 예시:
 // {
-//   profile: '김OO — 2026-02 학사 졸업, LLM Agent/RAG 주특기, Python, 병역필',
+//   profile: '홍OO — 2025-02 학사 졸업, 백엔드 주특기, Java·Spring, 병역필',
 //   fit: '①정규직 수시(인턴·교육형은 별도 표기) ②신입 허용 또는 경력 연차 무명시 ③AI/ML/백엔드 핏',
 //   targets: [
 //     { name: 'OO그룹(통합보드)', boards: ['https://careers.example.com'],

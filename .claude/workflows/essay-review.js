@@ -11,7 +11,7 @@ export const meta = {
 const A = typeof args === 'string' ? JSON.parse(args) : (args || {})  // args는 문자열로 올 수 있음
 const FILE = A.file
 const C = A.company
-if (!FILE || !C) return { error: 'args.file(문서 경로)·args.company 필요 — 예: {file: "산출물/OO_자소서_v3.md", company: "OO"}' }
+if (!FILE || !C) return { error: 'args.file(문서 경로)·args.company 필요 — 예: {file: "산출물/지원서/OO/제출물/자소서_v3.md", company: "OO"}' }
 const Q = A.questions ? `\n문항·글자수 제한: ${A.questions}` : ''
 
 const P = `[페르소나] 너는 IT 대기업 서류를 10년간 검토해온 채용 전문가다(CLAUDE.md 페르소나). 대상 문서를 Read로 정독하고, 근거가 필요한 주장은 ./memory/의 도씨에와 대조하라. 칭찬은 반환하지 말고 합격 확률을 바꾸는 지적만. StructuredOutput으로만 반환.`

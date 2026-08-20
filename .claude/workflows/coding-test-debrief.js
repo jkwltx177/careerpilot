@@ -1,6 +1,6 @@
 export const meta = {
   name: 'coding-test-debrief',
-  description: '코테 응시 직후 복기 — 후기 수집 + 문제별 정답 구현·검증 + 이후 일정 확인. args: {company, date, recollection, links?}',
+  description: '코테 응시 직후 복기 — 후기 수집 + 문제별 정답 구현·검증 + 이후 일정 확인. args: {company, date?, recollection, links?}',
   whenToUse: '코테 응시 당일~직후. 기억이 휘발되기 전 응시자 기억(recollection)을 받아 정답 재구성과 판세 수집을 병렬로 돌린다. 결과는 다음 단계(면접 코테 리뷰) 자산이 된다.',
   phases: [
     { title: 'Research', detail: '커뮤니티 후기·판세 / 이후 전형 일정 (병렬)' },
@@ -12,7 +12,7 @@ const A = typeof args === 'string' ? JSON.parse(args) : (args || {})  // args는
 const C = A.company
 const D = A.date
 const MEM = A.recollection
-if (!C || !MEM) return { error: 'args.company·args.recollection(응시자가 기억나는 대로 쓴 문제·접근 텍스트) 필요. date 권장, links(커뮤니티 URL 배열) 선택.' }
+if (!C || !MEM) return { error: 'args.company·args.recollection(응시자가 기억나는 대로 쓴 문제·접근 텍스트) 필요. date 권장, links(커뮤니티 URL 배열) 선택. 예: {company: "OO", date: "YYYY-MM-DD", recollection: "1번: 그래프 문제, 다익스트라로 접근했는데 2번 조건이 기억 안 남", links: ["https://..."]}' }
 const LINKS = Array.isArray(A.links) && A.links.length ? `\n응시자가 제보한 커뮤니티 링크(우선 정독): ${A.links.join(' , ')}` : ''
 
 const P = `[페르소나] 너는 IT 대기업 채용 전문가이자 코딩테스트 코치다(CLAUDE.md 페르소나). 사용자가 ${D || '최근'} "${C}" 코딩테스트를 응시했다. 확인 사실과 추정을 엄격히 구분하라. StructuredOutput으로만 반환.`
