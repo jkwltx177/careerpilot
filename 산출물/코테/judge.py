@@ -18,6 +18,7 @@ testcases.json 형식:
 import importlib.util
 import json
 import multiprocessing as mp
+import queue as _queue
 import sys
 import time
 from pathlib import Path
@@ -40,14 +41,35 @@ def run_case(sol_path, case, timeout_sec):
     q = mp.Queue()
     p = mp.Process(target=_child, args=(str(sol_path), case['input'], q))
     p.start()
-    p.join(timeout_sec)
-    if p.is_alive():
+    # 반드시 큐를 먼저 비운 뒤 join 한다.
+    # 반환값이 OS 파이프 버퍼(수십 KB)보다 크면 자식의 feeder 스레드가 파이프에 다 쓰지 못해
+    # 블록되고, 부모가 join()부터 하면 서로 기다리다 정답 풀이까지 시간 초과로 잡힌다.
+    # (리스트를 반환하는 문제는 이 순서가 아니면 전부 오판된다.)
+    deadline = time.perf_counter() + timeout_sec
+    result = None
+    while True:
+        try:
+            result = q.get(timeout=0.05)
+            break
+        except _queue.Empty:
+            pass
+        if not p.is_alive():
+            try:  # 종료 직후 큐에 늦게 도착한 값 회수
+                result = q.get(timeout=0.5)
+            except _queue.Empty:
+                result = ('err', '프로세스 비정상 종료', 0.0)
+            break
+        if time.perf_counter() >= deadline:
+            break
+    if result is None:
         p.terminate()
         p.join()
         return ('timeout', None, timeout_sec * 1000)
-    if q.empty():
-        return ('err', '프로세스 비정상 종료', 0.0)
-    return q.get()
+    p.join(5)
+    if p.is_alive():
+        p.terminate()
+        p.join()
+    return result
 
 
 def judge(cases, sol_path, timeout_sec, title):
@@ -66,7 +88,8 @@ def judge(cases, sol_path, timeout_sec, title):
             print(f'테스트 {i} 〉 실패 (기댓값과 다른 값 반환){tag}')
             if title == '예제':  # 예제만 상세 공개 — 채점 케이스는 실전처럼 비공개
                 print(f'    입력: {json.dumps(case["input"], ensure_ascii=False)[:200]}')
-                print(f'    기댓값: {case["output"]} / 반환값: {out}')
+                # 리스트를 반환하는 문제는 잘라서 — 안 그러면 콘솔이 통째로 밀린다
+                print(f'    기댓값: {str(case["output"])[:200]} / 반환값: {str(out)[:200]}')
         elif status == 'timeout':
             print(f'테스트 {i} 〉 실패 (시간 초과 {timeout_sec}s){tag}')
         else:
